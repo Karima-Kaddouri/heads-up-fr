@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heads Up Français</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  body {font-family: 'Poppins', sans-serif; text-align: center; background: #f6f6f9; color: #333; margin: 0; padding: 20px;}
+  h1 {color: #4b0082;}
+  button {background: #4b0082; color: white; border: none; border-radius: 10px; padding: 10px 20px; font-size: 1.1em; margin: 10px; cursor: pointer;}
+  button:hover {background: #673ab7;}
+  select, input {padding: 8px; margin: 5px; border-radius: 8px; border: 1px solid #ccc;}
+  #mot {font-size: 2em; margin-top: 40px; font-weight: bold;}
+  #timer {font-size: 1.5em; color: #e91e63; margin-top: 10px;}
+  #score {font-size: 1.2em; margin-top: 20px;}
+  #fin {font-size: 1.5em; margin-top: 20px; color: #4b0082;}
+</style>
+</head>
+<body>
+<h1>🎲 Heads Up Français 🎲</h1>
+<p>Pour Zack et Karima 💜</p>
+
+<div id="menu">
+  <label for="theme">Choisir un thème :</label>
+  <select id="theme"></select>
+  <br>
+  <label for="timerOption">Durée :</label>
+  <select id="timerOption">
+    <option value="60">60 secondes</option>
+    <option value="0">Sans minuterie</option>
+  </select>
+  <br>
+  <button onclick="demarrerJeu()">Démarrer</button>
+</div>
+
+<div id="jeu" style="display:none;">
+  <div id="timer"></div>
+  <div id="mot"></div>
+  <button onclick="correct()">✅ Correct</button>
+  <button onclick="suivant()">⏭️ Passer</button>
+  <div id="score"></div>
+</div>
+
+<div id="fin" style="display:none;"></div>
+
+<script>
+// listes de mots
+const themes = {
+  "Voyages": ["avion","valise","hôtel","plage","carte","passeport","train","taxi","montagne","musée"],
+  "Aliments": ["pain","fromage","pomme","banane","pâtes","riz","chocolat","café","eau","croissant"],
+  "Couleurs": ["rouge","bleu","vert","jaune","noir","blanc","rose","orange","gris","violet"],
+  "Objets du quotidien": ["stylo","chaise","table","lampe","ordinateur","téléphone","clé","livre","tasse","miroir"],
+  "Animaux": ["chat","chien","poisson","oiseau","lion","tigre","souris","vache","cheval","lapin"]
+};
+
+const selectTheme = document.getElementById('theme');
+for (let t in themes) {
+  const opt = document.createElement('option');
+  opt.value = t; opt.textContent = t; selectTheme.appendChild(opt);
+}
+
+let mots = [];
+let score = 0;
+let timer = null;
+let tempsRestant = 0;
+
+function demarrerJeu() {
+  const theme = selectTheme.value;
+  mots = [...themes[theme]];
+  score = 0;
+  tempsRestant = parseInt(document.getElementById('timerOption').value);
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('jeu').style.display = 'block';
+  document.getElementById('fin').style.display = 'none';
+  suivant();
+  if (tempsRestant > 0) {
+    afficherTimer();
+    timer = setInterval(() => {
+      tempsRestant--;
+      afficherTimer();
+      if (tempsRestant <= 0) finDuJeu();
+    }, 1000);
+  } else {
+    document.getElementById('timer').textContent = "Mode libre ⏳";
+  }
+}
+
+function afficherTimer() {
+  document.getElementById('timer').textContent = `⏱️ ${tempsRestant}s`; 
+}
+
+function suivant() {
+  if (mots.length === 0) finDuJeu();
+  const index = Math.floor(Math.random() * mots.length);
+  document.getElementById('mot').textContent = mots[index];
+  mots.splice(index, 1);
+}
+
+function correct() {
+  score++;
+  document.getElementById('score').textContent = `Score : ${score}`;
+  suivant();
+}
+
+function finDuJeu() {
+  clearInterval(timer);
+  document.getElementById('jeu').style.display = 'none';
+  document.getElementById('fin').style.display = 'block';
+  document.getElementById('fin').textContent = `Fin du jeu ! 🥳 Score final : ${score}`;
+  setTimeout(() => { document.getElementById('menu').style.display = 'block'; }, 2000);
+}
+
+// enregistrement service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(()=>console.log('Service Worker enregistré !'));
+}
+</script>
+</body>
+</html>
