@@ -18,8 +18,8 @@
 </style>
 </head>
 <body>
-<h1>🎲 Heads Up Français 🎲</h1>
-<p>Pour Zack et Karima 🖤</p>
+<h1> 🔎 Devine le mot! 🔍</h1>
+<p>Pour Zack et Karima  🖤</p>
 
 <div id="menu">
   <label for="theme">Choisir un thème :</label>
@@ -31,7 +31,7 @@
     <option value="0">Sans minuterie</option>
   </select>
   <br>
-  <button onclick="demarrerJeu()">Démarrer</button>
+  <button onclick="démarrerJeu()">Démarrer</button>
 </div>
 
 <div id="jeu" style="display:none;">
@@ -47,7 +47,7 @@
 <script>
 // listes de mots
 const themes = {
-  "Voyages": ["avion","valise","hôtel","plage","carte","passeport","train","taxi","montagne","musée"],
+  "Voyages": ["avion","valise","hôtel","plage","carte","passeport","train","taxi","montagne","musée", "réservation"],
   "Aliments": ["pain","fromage","pomme","banane","pâtes","riz","chocolat","café","eau","croissant"],
   "Couleurs": ["rouge","bleu","vert","jaune","noir","blanc","rose","orange","gris","violet"],
   "Objets du quotidien": ["stylo","chaise","table","lampe","ordinateur","téléphone","clé","livre","tasse","miroir"],
@@ -118,4 +118,5 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
