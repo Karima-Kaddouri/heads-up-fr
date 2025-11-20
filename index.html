@@ -39,7 +39,9 @@
   <div id="mot"></div>
   <button onclick="correct()">✅ Correct</button>
   <button onclick="suivant()">⏭️ Passer</button>
+  <button onclick="toggleListeVocab()">📚 Vocabulaire</button>
   <div id="score"></div>
+  <div id="listeVocab" style="display:none; margin-top:15px; font-size:0.9em; text-align:left; max-width:500px; margin-left:auto; margin-right:auto;"></div>
 </div>
 
 <div id="fin" style="display:none;"></div>
@@ -52,35 +54,82 @@ const themes = {
   "Couleurs": ["rouge","bleu","vert","jaune","noir","blanc","rose","orange","gris","violet"],
   "Objets du quotidien": ["stylo","chaise","table","lampe","ordinateur","téléphone","clé","livre","tasse","miroir"],
   "Animaux": ["chat","chien","poisson","oiseau","lion","tigre","souris","vache","cheval","lapin"],
-  "Corps": ["mains", "nez", "nichons", "cul", "sourire", "visage", "doits", "jambe", "bras", "piedes"]
+  "Corps": ["mains", "nez", "nichons", "cul", "sourire", "visage", "doigts", "jambe", "bras", "pieds"]
+  "Maison": ["maison","appartement","cuisine","salon","chambre","salle de bain","jardin","balcon","escalier","plafond","fenêtre","porte"],
+  "École": ["école","classe","professeur","élève","cahier","stylo","tableau","devoirs","examen","récréation","bibliothèque","gymnase"],
+  "Famille": ["famille","mère","père","frère","sœur","enfant","bébé","oncle","tante","cousin","grand-père","grand-mère"],
+  "Métiers": ["médecin","professeur","vendeur","serveur","infirmier","ingénieur","avocat","employé","policier","agriculteur","artiste","chauffeur"],
+  "Sports": ["football","tennis","natation","basket","vélo","course","ski","yoga","boxe","danse","gym","rugby"],
+  "Vêtements": ["pantalon","chemise","robe","jupe","manteau","pull","t-shirt","chaussures","chaussettes","chapeau","écharpe","gants"],
+  "Ville": ["rue","place","parc","pont","magasin","banque","poste","marché","école","mairie","église","gare"],
+  "Nature": ["arbre","fleur","forêt","rivière","lac","montagne","plage","désert","ciel","nuage","roche","herbe"],
+  "Temps et météo": ["soleil","pluie","neige","vent","orage","nuageux","chaud","froid","tempête","brouillard","arc-en-ciel","saison"],
+  "Transports": ["voiture","bus","métro","tramway","train","avion","vélo","moto","bateau","arrêt","station","ticket"],
+  "Technologie": ["ordinateur","téléphone","tablette","internet","écran","clavier","souris","application","fichier","mot de passe","wifi","robot"],
+  "Musique": ["chanson","musique","guitare","piano","batterie","chanteur","groupe","concert","rythme","mélodie","radio","casque"],
+  "Cinéma et séries": ["film","série","acteur","actrice","scène","écran","cinéma","sous-titres","épisode","saison","héros","méchant"],
+  "Sentiments": ["joie","tristesse","colère","peur","surprise","amour","honte","fierté","jalousie","fatigue","stress","courage"],
+  "Activités quotidiennes": ["manger","dormir","cuisiner","travailler","étudier","marcher","conduire","lire","écrire","nettoyer","ranger","se doucher"],
+  "Fêtes et célébrations": ["anniversaire","fête","cadeau","gâteau","bougie","décoration","danse","musique","invité","costume","feu d'artifice","champagne"],
+  "Cuisine et restaurant": ["cuisine","recette","four","cuisinière","poêle","casserole","couteau","cuillère","fourchette","serveur","menu","addition"],
+  "Loisirs": ["lecture","dessin","peinture","jardinage","voyage","photographie","jeu","puzzle","bricolage","cinéma","théâtre","camping"],
+  "Achats et argent": ["argent","prix","magasin","caisse","réduction","carte bancaire","billet","pièce","facture","portefeuille","commande","marché"],
+  "Santé": ["médecin","hôpital","pharmacie","médicament","ordonnance","rendez-vous","fièvre","douleur","blessure","accident","ambulance","repos"]
 };
 
 const selectTheme = document.getElementById('theme');
 for (let t in themes) {
   const opt = document.createElement('option');
-  opt.value = t; opt.textContent = t; selectTheme.appendChild(opt);
+  opt.value = t;
+  opt.textContent = t;
+  selectTheme.appendChild(opt);
 }
 
 let mots = [];
+let tousLesMotsTheme = []; // copie complète pour l’affichage
 let score = 0;
 let timer = null;
 let tempsRestant = 0;
+let themeActuel = "";
 
 function demarrerJeu() {
   const theme = selectTheme.value;
+  themeActuel = theme;
+
+  // copie complète pour la liste affichée
+  tousLesMotsTheme = [...themes[theme]];
+
+  // copie utilisée pour le jeu (on va la modifier avec splice)
   mots = [...themes[theme]];
+
   score = 0;
-  tempsRestant = parseInt(document.getElementById('timerOption').value);
+  document.getElementById('score').textContent = `Score : ${score}`;
+  tempsRestant = parseInt(document.getElementById('timerOption').value, 10);
+
   document.getElementById('menu').style.display = 'none';
   document.getElementById('jeu').style.display = 'block';
   document.getElementById('fin').style.display = 'none';
+
+  // cacher et vider la liste au début de chaque partie
+  const listeDiv = document.getElementById('listeVocab');
+  listeDiv.style.display = 'none';
+  listeDiv.innerHTML = "";
+
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+
   suivant();
+
   if (tempsRestant > 0) {
     afficherTimer();
     timer = setInterval(() => {
       tempsRestant--;
       afficherTimer();
-      if (tempsRestant <= 0) finDuJeu();
+      if (tempsRestant <= 0) {
+        finDuJeu();
+      }
     }, 1000);
   } else {
     document.getElementById('timer').textContent = "Mode libre ⏳";
@@ -88,11 +137,14 @@ function demarrerJeu() {
 }
 
 function afficherTimer() {
-  document.getElementById('timer').textContent = `⏱️ ${tempsRestant}s`; 
+  document.getElementById('timer').textContent = `⏱️ ${tempsRestant}s`;
 }
 
 function suivant() {
-  if (mots.length === 0) finDuJeu();
+  if (mots.length === 0) {
+    finDuJeu();
+    return;
+  }
   const index = Math.floor(Math.random() * mots.length);
   document.getElementById('mot').textContent = mots[index];
   mots.splice(index, 1);
@@ -104,12 +156,29 @@ function correct() {
   suivant();
 }
 
+// NOUVELLE FONCTION : afficher / cacher la liste de vocabulaire
+function toggleListeVocab() {
+  const div = document.getElementById('listeVocab');
+  if (div.style.display === 'none' || div.style.display === '') {
+    div.style.display = 'block';
+    const listHtml = tousLesMotsTheme.map(w => '• ' + w).join('<br>');
+    div.innerHTML = '<strong>Liste du thème "' + themeActuel + '" :</strong><br>' + listHtml;
+  } else {
+    div.style.display = 'none';
+  }
+}
+
 function finDuJeu() {
-  clearInterval(timer);
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
   document.getElementById('jeu').style.display = 'none';
   document.getElementById('fin').style.display = 'block';
   document.getElementById('fin').textContent = `Fin du jeu ! 🥳 Score final : ${score}`;
-  setTimeout(() => { document.getElementById('menu').style.display = 'block'; }, 2000);
+  setTimeout(() => {
+    document.getElementById('menu').style.display = 'block';
+  }, 2000);
 }
 
 // enregistrement service worker
@@ -119,6 +188,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
